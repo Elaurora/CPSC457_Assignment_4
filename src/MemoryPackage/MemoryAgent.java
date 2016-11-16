@@ -1,3 +1,5 @@
+package MemoryPackage;
+
 /**
  * Seperate thread that reads values out of the writebuffer and into mainMemory
  * @author Patrick

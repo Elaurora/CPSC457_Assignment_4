@@ -1,3 +1,4 @@
+package MemoryPackage;
 /**
  * Used by the WriteBuffer Method when load is called on
  * @author joshua
