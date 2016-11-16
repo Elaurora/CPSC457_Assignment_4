@@ -10,6 +10,21 @@ public class Processor extends Thread {
 	 */
 	private boolean done = false;
 	
+	/**
+	 * The buffer for the processor to write too, and load from
+	 */
+	private WriteBuffer writeBuffer;
+	
+	/**
+	 * The backup memory unit to load from
+	 */
+	private MainMemory mainMemory;
+	
+	public Processor(WriteBuffer writeBuffer, MainMemory mainMemory) {
+		this.writeBuffer = writeBuffer;
+		this.mainMemory = mainMemory;
+	}
+
 	public void run() {
 		while(!done) {
 			//TODO: stuff
