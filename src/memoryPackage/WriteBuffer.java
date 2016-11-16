@@ -2,6 +2,7 @@ package memoryPackage;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 
@@ -29,13 +30,13 @@ public class WriteBuffer {
 	 * The data waiting to be stored to main memory
 	 * In the case where TSO is being used, there will be only one non null entry with the key default_TSO_Index
 	 */
-	private ConcurrentHashMap<String, ConcurrentLinkedQueue<PendingStore>> buffer;
+	private ConcurrentHashMap<String, ConcurrentLinkedDeque<PendingStore>> buffer;
 	
 	
 	/**
 	 * Queue that keeps track of which variables turn it is to get written to the main memory
 	 */
-	private ConcurrentLinkedQueue<String> storeQueue_PSO;
+	private ConcurrentLinkedDeque<String> storeQueue_PSO;
 	
 	
 	/**
@@ -49,14 +50,14 @@ public class WriteBuffer {
 			
 			//Giving an intial size of 1 and load factor of 2 ensures the minumum amount of space will be allocated for the 
 			//map, since while using TSO we know there will only be one entry in the hashmap
-			buffer = new ConcurrentHashMap<String, ConcurrentLinkedQueue<PendingStore>> (1, 2);
-			buffer.put(default_TSO_Index, new ConcurrentLinkedQueue<PendingStore>());
+			buffer = new ConcurrentHashMap<String, ConcurrentLinkedDeque<PendingStore>> (1, 2);
+			buffer.put(default_TSO_Index, new ConcurrentLinkedDeque<PendingStore>());
 			
 		} else{//Otherwise if this is a PSO buffer
 			
 			//Give the buffer the default size and load factor
-			buffer = new ConcurrentHashMap<String, ConcurrentLinkedQueue<PendingStore>>();
-			storeQueue_PSO = new ConcurrentLinkedQueue<String>();
+			buffer = new ConcurrentHashMap<String, ConcurrentLinkedDeque<PendingStore>>();
+			storeQueue_PSO = new ConcurrentLinkedDeque<String>();
 		}
 		
 	}
@@ -96,7 +97,7 @@ public class WriteBuffer {
 		
 		PendingStore returned = null;
 		String nextToBeStoredIndex = this.storeQueue_PSO.poll();
-		ConcurrentLinkedQueue<PendingStore> nextToBeStoredQueue = buffer.get(nextToBeStoredIndex);
+		ConcurrentLinkedDeque<PendingStore> nextToBeStoredQueue = buffer.get(nextToBeStoredIndex);
 		
 		returned = nextToBeStoredQueue.poll();
 		
@@ -120,8 +121,9 @@ public class WriteBuffer {
 		
 		if(this.writeAlgorithm_isTSO == true){ // TSO method
 			return loadTSO(index);
+		} else{
+			return loadPSO(index);
 		}
-		return loadPSO(index);
 	}
 	
 	
@@ -132,28 +134,24 @@ public class WriteBuffer {
 	 * @throws NotInBufferException - if the requested variable is not currently waiting to be stored
 	 */
 	private Integer loadTSO(String index) throws NotInBufferException{
-		Integer returned = null;
 		
-		ConcurrentLinkedQueue<PendingStore> indexQueue;
+		ConcurrentLinkedDeque<PendingStore> indexQueue;
 		
 		Iterator<PendingStore> queueIter;
 		
 		indexQueue = buffer.get(default_TSO_Index);
 		
-		queueIter = indexQueue.iterator();
+		queueIter = indexQueue.descendingIterator();
 		
 		while(queueIter.hasNext()){
 			PendingStore queueVal = queueIter.next();
 			if(queueVal.getIndex().equals(index)){
-				returned = queueVal.getValue();
+				return queueVal.getValue();
 			}
 		}
 		
-		if(returned == null){// If it is still null then no instances of the given index were foudn in the queue
-			throw new NotInBufferException();
-		}
+		throw new NotInBufferException();
 		
-		return returned;
 	}
 	
 	
@@ -164,9 +162,8 @@ public class WriteBuffer {
 	 * @throws NotInBufferException - if the requested variable is not currently waiting to be stored
 	 */
 	private Integer loadPSO(String index) throws NotInBufferException{
-		Integer returned = null;
 		
-		ConcurrentLinkedQueue<PendingStore> indexQueue;
+		ConcurrentLinkedDeque<PendingStore> indexQueue;
 		
 		Iterator<PendingStore> queueIter;
 		
@@ -176,13 +173,11 @@ public class WriteBuffer {
 			throw new NotInBufferException();
 		}
 		
-		queueIter = indexQueue.iterator();
+		queueIter = indexQueue.descendingIterator();
+
+		return queueIter.next().getValue();// The value at the tail of the queue is the most up to date one
 		
-		while(queueIter.hasNext()){
-			returned = queueIter.next().getValue();
-		}
 		
-		return returned;
 	}
 	
 	
@@ -218,12 +213,12 @@ public class WriteBuffer {
 	private void storePSO(String index, Integer value){
 		PendingStore ToBeAdded = new PendingStore(index, value);
 		
-		ConcurrentLinkedQueue<PendingStore> variablesQueue = buffer.get(index);
+		ConcurrentLinkedDeque<PendingStore> variablesQueue = buffer.get(index);
 		
 		if(variablesQueue == null){// If the variable is not currently in the buffer
 			
 			//Add a queue for this variable to the buffer, add variable to the write queue
-			variablesQueue = new ConcurrentLinkedQueue<PendingStore>();
+			variablesQueue = new ConcurrentLinkedDeque<PendingStore>();
 			variablesQueue.add(ToBeAdded);
 			buffer.put(index, variablesQueue);
 			storeQueue_PSO.add(index);
@@ -243,8 +238,9 @@ public class WriteBuffer {
 	public boolean isVariableInBuffer(String index){
 		if(this.writeAlgorithm_isTSO == true){
 			return isVariableInBufferTSO(index);
+		} else{
+			return isVariableInBufferPSO(index);
 		}
-		return isVariableInBufferPSO(index);
 	}
 	
 	
@@ -275,8 +271,9 @@ public class WriteBuffer {
 	private boolean isVariableInBufferPSO(String index){
 		if(buffer.get(index) == null){
 			return false;
+		} else{
+			return true;
 		}
-		return true;
 	}
 	
 	
