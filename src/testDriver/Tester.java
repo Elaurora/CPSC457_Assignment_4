@@ -15,57 +15,66 @@ import memoryPackage.WriteBuffer;
 public class Tester {
 	public static void main(String[] args) {
 		
+		//process arguments
 		if(args.length < 1) {
 			System.err.println("No store algorithm provided, correct invokation: java Tester [pso/tso]");
 			return;
 		}
+		
+		boolean TSO = args[0].equals("tso");
+		
+		
+		int n = 10;
+		if(args.length > 1) {
+			n = Integer.parseInt(args[1]);
+		}
+		
+		
 		//create a main memory
 		MainMemory mainMemory = new MainMemory();
 		
-		boolean TSO = args[0].equals("tso");
-		//create 2 writeBuffers
-		WriteBuffer wb1 = new WriteBuffer(TSO);
-		WriteBuffer wb2 = new WriteBuffer(TSO);
+		//create n processors
+		Processor[] processors = new Processor[n];
 		
-		//create 2 processors
-		Processor p1 = new Processor(1, 2, wb1, mainMemory);
-		Processor p2 = new Processor(2, 2, wb2, mainMemory);
+		//create n memoryAgents
+		MemoryAgent[] memoryAgents = new MemoryAgent[n];
 		
-		p1.start();
-		p2.start();
-	
+		for(int i = 0; i < n; i++) {
+			WriteBuffer wb = new WriteBuffer(TSO);
+			processors[i] = new Processor(i, n, wb, mainMemory);
+			memoryAgents[i] = new MemoryAgent(wb, mainMemory);
+		}
 		
-		//create 2 memory agents
-		MemoryAgent ma1 = new MemoryAgent(wb1, mainMemory);
-		MemoryAgent ma2 = new MemoryAgent(wb2, mainMemory);
-		
-		ma1.start();
-		ma2.start();
+		for(int i = 0; i < n; i++) {
+			processors[i].start();
+			memoryAgents[i].start();
+		}
 		
 		//poll user for quit command
 		Scanner scan = new Scanner(System.in);
 		System.out.println("Simulation Running, type \"quit\" to exit");
 		while(true) {
-			String next = scan.next();
-			if(next.equals("quit")) {
+			if(scan.next().equals("quit")) {
 				break; 
 			}
 		}
 		
+		System.out.println("Simulation Ending, please wait...");
+		
 		scan.close();
 		
 		//tell the threads to quit
-		p1.done();
-		p2.done();
-		ma1.done();
-		ma2.done();
+		for(int i = 0; i < processors.length; i++) {
+			processors[i].done();
+			memoryAgents[i].done();
+		}
 		
 		//wait for threads to finish
 		try {
-			p1.join();
-			p2.join();
-			ma1.join();
-			ma2.join();
+			for(int i = 0; i < processors.length; i++) {
+				processors[i].join();
+				memoryAgents[i].join();
+			}
 		} catch (InterruptedException e) {
 			//on interrupt just quit
 		}

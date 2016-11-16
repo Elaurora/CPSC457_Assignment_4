@@ -20,7 +20,7 @@ public class MainMemory {
 	 * 		The loaded value, or null if it isn't in the memory
 	 */
 	public Integer load(String index) {
-		return data.get(index);
+		return this.data.get(index);
 	}
 	
 	/**
@@ -31,6 +31,6 @@ public class MainMemory {
 	 * 		The value of the variable to store
 	 */
 	public void store(String index, Integer value) {
-		data.put(index, value);
+		this.data.put(index, value);
 	}
 }

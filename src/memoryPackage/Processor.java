@@ -36,7 +36,7 @@ public class Processor extends Thread {
 		this.writeBuffer = writeBuffer;
 		this.mainMemory = mainMemory;
 		
-		this.writeBuffer.store("process" + this.id + "level", -1);
+		this.mainMemory.store("process" + this.id + "level", -1);
 	}
 
 	/**
@@ -79,7 +79,11 @@ public class Processor extends Thread {
 		this.writeBuffer.store("level" + level + "turn", this.id);
 		
 		while(processAboveUs(level) && weAreLastProcessIntoOurLevel(level)) {
-			//sleep(100);
+			try {
+				sleep(1);
+			} catch (InterruptedException e) {
+				//nothing to handle
+			}
 		}
 	}
 
@@ -136,12 +140,12 @@ public class Processor extends Thread {
 	 * Simulation critical section, might fail if multiple programs execute this concurrently
 	 */
 	public void criticalSection() {
-		Integer originalA = (int) Math.random() % 100;
-		Integer originalB = (int) Math.random() % 100;
+		int originalA = (int) (Math.random() * 100);
+		int originalB = (int) (Math.random() * 100);
 		
-		this.mainMemory.store("a", originalA);
 		
-		this.mainMemory.store("b", originalB);
+		this.writeBuffer.store("a", originalA);
+		this.writeBuffer.store("b", originalB);
 		
 		try {
 			sleep(200);
@@ -149,12 +153,20 @@ public class Processor extends Thread {
 			//no harm no foul
 		}
 		
-		Integer loadedA = this.mainMemory.load("a");
+		int loadedA = -1;
+		int loadedB = -1;
 		
-		Integer loadedB = this.mainMemory.load("b");
+		try {
+			loadedA = this.writeBuffer.load("a");
+			loadedB = this.writeBuffer.load("b");
+		} catch (NotInBufferException e) {
+			loadedA = this.mainMemory.load("a");
+			loadedB = this.mainMemory.load("b");
+		}
 		
-		Integer correctSum = originalA + originalB;
-		Integer actualSum = loadedA + loadedB;
+		
+		int correctSum = originalA + originalB;
+		int actualSum = loadedA + loadedB;
 		
 		if(actualSum != correctSum) {
 			System.err.println("Error in critical section, apparently " + originalA + " + " + originalB +  " = " + actualSum);
