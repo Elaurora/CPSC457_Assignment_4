@@ -16,7 +16,7 @@ public class Tester {
 	public static void main(String[] args) {
 		
 		if(args.length < 1) {
-			System.err.println("No store algorithm provided, correct invokation: java Tester [pso/tsp]");
+			System.err.println("No store algorithm provided, correct invokation: java Tester [pso/tso]");
 			return;
 		}
 		//create a main memory
