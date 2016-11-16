@@ -38,7 +38,7 @@ public class MemoryAgent extends Thread {
 		//while we aren't done, read a value from the buffer, 
 		//and if it existed, store it into main memory
 		while(!done) {
-			PendingStore store = this.pendingStoreBuffer.NextValueToBeStored();
+			PendingStore store = this.pendingStoreBuffer.nextValueToBeStored();
 			
 			if(store != null) {
 				this.mainMemory.store(store.getIndex(), store.getValue());
