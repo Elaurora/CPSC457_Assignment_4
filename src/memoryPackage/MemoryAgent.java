@@ -1,12 +1,12 @@
 package memoryPackage;
 
 /**
- * Seperate thread that reads values out of the writebuffer and into mainMemory
+ * Separate thread that reads values out of the writebuffer and into mainMemory
  * @author Patrick
  */
 public class MemoryAgent extends Thread {
 	/**
-	 * The buffer of stores that have yet to be commited to main memory
+	 * The buffer of stores that have yet to be committed to main memory
 	 */
 	private WriteBuffer pendingStoreBuffer;
 	
@@ -34,7 +34,7 @@ public class MemoryAgent extends Thread {
 	}
 	
 	/**
-	 * Continously reads values out of writeBuffer and stores them to main memory
+	 * Continuously reads values out of writeBuffer and stores them to main memory
 	 */
 	public void run() {
 		//while we aren't done, read a value from the buffer, 

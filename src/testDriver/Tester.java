@@ -28,8 +28,8 @@ public class Tester {
 		WriteBuffer wb2 = new WriteBuffer(TSO);
 		
 		//create 2 processors
-		Processor p1 = new Processor(wb1, mainMemory);
-		Processor p2 = new Processor(wb2, mainMemory);
+		Processor p1 = new Processor(1, 2, wb1, mainMemory);
+		Processor p2 = new Processor(2, 2, wb2, mainMemory);
 		
 		p1.start();
 		p2.start();
