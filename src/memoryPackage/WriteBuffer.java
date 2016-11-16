@@ -1,14 +1,13 @@
 package memoryPackage;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 
 /**
- * 
- * @author joshua
- *
+ * Buffer for the MainMemory, 
+ * @author joshua walters
  */
 public class WriteBuffer {
 	
@@ -23,14 +22,14 @@ public class WriteBuffer {
 	/**
 	 * Index used to access the single element in the hashmap if a TSO is being used
 	 */
-	private static final String default_TSO_Index = "Patrick's_Mom's_Spaghetti";
+	private static final String default_TSO_Index = "";
 	
 	
 	/**
 	 * The data waiting to be stored to main memory
 	 * In the case where TSO is being used, there will be only one non null entry with the key default_TSO_Index
 	 */
-	private HashMap<String, ConcurrentLinkedQueue<PendingStore>> buffer;
+	private ConcurrentHashMap<String, ConcurrentLinkedQueue<PendingStore>> buffer;
 	
 	
 	/**
@@ -50,13 +49,13 @@ public class WriteBuffer {
 			
 			//Giving an intial size of 1 and load factor of 2 ensures the minumum amount of space will be allocated for the 
 			//map, since while using TSO we know there will only be one entry in the hashmap
-			buffer = new HashMap<String, ConcurrentLinkedQueue<PendingStore>> (1, 2);
+			buffer = new ConcurrentHashMap<String, ConcurrentLinkedQueue<PendingStore>> (1, 2);
 			buffer.put(default_TSO_Index, new ConcurrentLinkedQueue<PendingStore>());
 			
 		} else{//Otherwise if this is a PSO buffer
 			
 			//Give the buffer the default size and load factor
-			buffer = new HashMap<String, ConcurrentLinkedQueue<PendingStore>>();
+			buffer = new ConcurrentHashMap<String, ConcurrentLinkedQueue<PendingStore>>();
 			storeQueue_PSO = new ConcurrentLinkedQueue<String>();
 		}
 		
@@ -64,7 +63,7 @@ public class WriteBuffer {
 	
 	
 	/**
-	 * 
+	 * Returns the value whos turn it is to be stored, and removes that value from the buffer
 	 * @return The next value that is set to to be sent to main main memory. Returns null if the buffer is empty
 	 */
 	public PendingStore nextValueToBeStored(){
@@ -77,8 +76,8 @@ public class WriteBuffer {
 	
 	
 	/**
-	 * 
-	 * @return
+	 * Helper function to nextValueToBeStored, gets the next value for the TSO algorithm
+	 * @return The next value that is set to to be sent to main main memory. Returns null if the buffer is empty
 	 */
 	private PendingStore getAndRemoveNextToBeStoredTSO(){
 		return buffer.get(default_TSO_Index).poll();
@@ -86,8 +85,8 @@ public class WriteBuffer {
 	
 	
 	/**
-	 * 
-	 * @return
+	 * Helper function to nextValueToBeStored, gets the next value for the PSO algorithm
+	 * @return The next value that is set to to be sent to main main memory. Returns null if the buffer is empty
 	 */
 	private PendingStore getAndRemoveNextToBeStoredPSO(){
 		
@@ -104,7 +103,7 @@ public class WriteBuffer {
 		if(!nextToBeStoredQueue.isEmpty()){// If that was not the last value to be stored for this variable, return it to the queue
 			this.storeQueue_PSO.add(nextToBeStoredIndex);
 		} else{// If that was the last value to be stored for that variable, remove its queue from the buffer map
-			buffer.put(nextToBeStoredIndex, null);
+			buffer.remove(nextToBeStoredIndex);
 		}
 		
 		return returned;
@@ -157,6 +156,7 @@ public class WriteBuffer {
 		return returned;
 	}
 	
+	
 	/**
 	 * Helper function for load, loads using PSO algorithm
 	 * @param index - the name of the variable being loaded
@@ -185,21 +185,107 @@ public class WriteBuffer {
 		return returned;
 	}
 	
+	
 	/**
-	 * Adds the 
-	 * @param index
-	 * @param value
+	 * Adds the given value for the given variable to the buffer
+	 * @param index - Name of the variable
+	 * @param value - value of the variable
 	 */
 	public void store(String index, Integer value){
+		if(this.writeAlgorithm_isTSO == true){
+			storeTSO(index, value);
+		} else{
+			storePSO(index, value);
+		}
+	}
+	
+	
+	/**
+	 * Helper function to store, does the store for th TSO algorithm
+	 * @param index - Name of the variable
+	 * @param value - value of the variable
+	 */
+	private void storeTSO(String index, Integer value){
+		buffer.get(default_TSO_Index).add(new PendingStore(index, value));
+	}
+	
+	
+	/**
+	 * Helper function to store, does the store for th PSO algorithm
+	 * @param index - Name of the variable
+	 * @param value - value of the variable
+	 */
+	private void storePSO(String index, Integer value){
+		PendingStore ToBeAdded = new PendingStore(index, value);
+		
+		ConcurrentLinkedQueue<PendingStore> variablesQueue = buffer.get(index);
+		
+		if(variablesQueue == null){// If the variable is not currently in the buffer
+			
+			//Add a queue for this variable to the buffer, add variable to the write queue
+			variablesQueue = new ConcurrentLinkedQueue<PendingStore>();
+			variablesQueue.add(ToBeAdded);
+			buffer.put(index, variablesQueue);
+			storeQueue_PSO.add(index);
+		} else{// If the variable is already in the buffer
+			//Just add this value to the variables queue, it should already be in the write queue
+			variablesQueue.add(ToBeAdded);
+		}
 		
 	}
+	
+	
+	/**
+	 * Checks if a variable with the given name is waiting to be stored in this buffer
+	 * @param index - variable name to search for
+	 * @return true if the variable is waiting to be written, false otherwise
+	 */
+	public boolean isVariableInBuffer(String index){
+		if(this.writeAlgorithm_isTSO == true){
+			return isVariableInBufferTSO(index);
+		}
+		return isVariableInBufferPSO(index);
+	}
+	
+	
+	/**
+	 * Checks if the variable is in the buffer for the TSO algorithm
+	 * @param index - variable name to search for
+	 * @return true if the variable is waiting to be written, false otherwise
+	 */
+	private boolean isVariableInBufferTSO(String index){
+		
+		Iterator<PendingStore> tsoIter = buffer.get(default_TSO_Index).iterator();
+		
+		while(tsoIter.hasNext()){
+			if(tsoIter.next().getIndex().equals(index)){
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	
+	/**
+	 * Checks if the variable is in the buffer for the TSO algorithm
+	 * @param index - variable name to search for
+	 * @return true if the variable is waiting to be written, false otherwise
+	 */
+	private boolean isVariableInBufferPSO(String index){
+		if(buffer.get(index) == null){
+			return false;
+		}
+		return true;
+	}
+	
 	
 	/**
 	 * a value of true means it is using TSO
 	 * a value of false means it is using PSO
 	 * @return A boolean indicating the type of store algorithm being used for this buffer
 	 */
-	public boolean getAlgorithm(){
+	public boolean getAlgorithmUsed(){
 		return this.writeAlgorithm_isTSO;
 	}
 }
