@@ -79,11 +79,11 @@ public class Processor extends Thread {
 		this.writeBuffer.store("level" + level + "turn", this.id);
 		
 		while(processAboveUs(level) && weAreLastProcessIntoOurLevel(level)) {
-			try {
-				sleep(1);
-			} catch (InterruptedException e) {
+			//try {
+				//sleep(1);
+			//} catch (InterruptedException e) {
 				//nothing to handle
-			}
+			//}
 		}
 	}
 

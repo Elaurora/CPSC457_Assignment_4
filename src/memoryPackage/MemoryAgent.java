@@ -47,7 +47,7 @@ public class MemoryAgent extends Thread {
 			}
 			
 			try {
-				sleep(1);
+				sleep(100);
 			} catch (InterruptedException e) {
 				//nothing to handle
 			}

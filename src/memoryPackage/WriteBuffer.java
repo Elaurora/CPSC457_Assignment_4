@@ -172,6 +172,7 @@ public class WriteBuffer {
 		if(indexQueue == null){ 
 			throw new NotInBufferException();
 		}
+		System.out.println(indexQueue.size());
 		
 		queueIter = indexQueue.descendingIterator();
 
