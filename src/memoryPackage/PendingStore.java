@@ -1,4 +1,4 @@
-package MemoryPackage;
+package memoryPackage;
 /**
  * Represents a pending store to mainMemory
  * @author Patrick
