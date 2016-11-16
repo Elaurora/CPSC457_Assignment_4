@@ -1,4 +1,4 @@
-package MemoryPackage;
+package memoryPackage;
 
 
 /**
@@ -14,11 +14,13 @@ public class WriteBuffer {
 	 */
 	private boolean tso;
 	
+	
+	
 	/**
 	 * Creates a WriteBuffer with the indicated write 
 	 */
 	public WriteBuffer(boolean writeAlgorithm){
-		
+		this.tso = writeAlgorithm;
 	}
 	
 	

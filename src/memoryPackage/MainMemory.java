@@ -1,4 +1,4 @@
-package MemoryPackage;
+package memoryPackage;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**

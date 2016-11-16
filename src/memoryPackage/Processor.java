@@ -1,4 +1,4 @@
-package MemoryPackage;
+package memoryPackage;
 /**
  * A simulation of a processor (process) using the simulated memory system
  * @author Patrick

@@ -1,4 +1,4 @@
-package MemoryPackage;
+package memoryPackage;
 /**
  * Used by the WriteBuffer Method when load is called on
  * @author joshua
