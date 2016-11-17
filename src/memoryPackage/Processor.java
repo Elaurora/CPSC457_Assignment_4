@@ -25,8 +25,14 @@ public class Processor extends Thread {
 	 */
 	private int processCount = -1;
 	
+	/**
+	 * How many error in the critical section this class has detected
+	 */
 	public static int errorTotal = 0;
 	
+	/**
+	 * How many successes (defined as not errors) have occured in the critical section
+	 */
 	public static int successTotal = 0;
 	
 	/**
@@ -34,9 +40,31 @@ public class Processor extends Thread {
 	 */
 	private MainMemory mainMemory;
 	
+	/**
+	 * A mutable integer for critical section demos
+	 */
 	private MutableInteger a;
+	
+	/**
+	 * A mutable integer for critical section demos
+	 */
 	private MutableInteger b;
 	
+	/**
+	 * Initialzies a processor to run
+	 * @param id
+	 * 		This processors ID
+	 * @param processCount
+	 * 		How many processors exist in total
+	 * @param writeBuffer
+	 * 		The buffer for writing to
+	 * @param mainMemory
+	 * 		Main memory for writing to
+	 * @param a
+	 * 		A shared integer for critical section demos
+	 * @param b
+	 * 		A shared integer for critical section demos
+	 */
 	public Processor(int id, int processCount, WriteBuffer writeBuffer, MainMemory mainMemory, MutableInteger a, MutableInteger b) {
 		this.id = id;
 		this.processCount = processCount;
