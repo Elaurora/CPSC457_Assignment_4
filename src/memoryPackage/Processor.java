@@ -40,7 +40,7 @@ public class Processor extends Thread {
 		this.mainMemory = mainMemory;
 		this.a = a;
 		this.b = b;
-		
+		//initialize our level flag, this must be done to ensure that the initialization is done before the program starts
 		this.mainMemory.store("process" + this.id + "level", -1);
 	}
 

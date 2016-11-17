@@ -45,7 +45,7 @@ public class Tester {
 		MemoryAgent[] memoryAgents = new MemoryAgent[n];
 		
 		for(int i = 0; i < n; i++) {
-			WriteBuffer wb = new WriteBuffer(TSO);
+			WriteBuffer wb = new WriteBuffer(TSO, mainMemory);
 			processors[i] = new Processor(i, n, wb, mainMemory,a, b);
 			memoryAgents[i] = new MemoryAgent(wb, mainMemory);
 		}
