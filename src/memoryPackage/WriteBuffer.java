@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  */
 public class WriteBuffer {
 	
+	private MainMemory mainMemory;
 	
 	/**
 	 * If true buffer uses TSO, FIFO
@@ -43,7 +44,7 @@ public class WriteBuffer {
 	 * a value of true means it is using TSO
 	 * a value of false means it is using PSO
 	 */
-	public WriteBuffer(boolean writeAlgorithm){
+	public WriteBuffer(boolean writeAlgorithm, MainMemory mainMemory){
 		this.writeAlgorithm_isTSO = writeAlgorithm;
 		if(this.writeAlgorithm_isTSO == true){
 			
@@ -58,6 +59,8 @@ public class WriteBuffer {
 			buffer = new ConcurrentHashMap<String, ConcurrentLinkedDeque<PendingStore>>();
 			storeQueue_PSO = new ConcurrentLinkedDeque<String>();
 		}
+		
+		this.mainMemory = mainMemory;
 		
 	}
 	
