@@ -134,23 +134,24 @@ public class WriteBuffer {
 	 * @throws NotInBufferException - if the requested variable is not currently waiting to be stored
 	 */
 	private Integer loadTSO(String index) throws NotInBufferException{
-		
-		ConcurrentLinkedDeque<PendingStore> indexQueue;
-		
-		Iterator<PendingStore> queueIter;
-		
-		indexQueue = buffer.get(default_TSO_Index);
-		
-		queueIter = indexQueue.descendingIterator();
-		
-		while(queueIter.hasNext()){
-			PendingStore queueVal = queueIter.next();
-			if(queueVal.getIndex().equals(index)){
-				return queueVal.getValue();
+		synchronized(buffer){
+			ConcurrentLinkedDeque<PendingStore> indexQueue;
+			
+			Iterator<PendingStore> queueIter;
+			
+			indexQueue = buffer.get(default_TSO_Index);
+			
+			queueIter = indexQueue.descendingIterator();
+			
+			while(queueIter.hasNext()){
+				PendingStore queueVal = queueIter.next();
+				if(queueVal.getIndex().equals(index)){
+					return queueVal.getValue();
+				}
 			}
 		}
-		
 		throw new NotInBufferException();
+		
 		
 	}
 	
@@ -162,6 +163,7 @@ public class WriteBuffer {
 	 * @throws NotInBufferException - if the requested variable is not currently waiting to be stored
 	 */
 	private Integer loadPSO(String index) throws NotInBufferException{
+
 		
 		ConcurrentLinkedDeque<PendingStore> indexQueue;
 		
@@ -176,7 +178,6 @@ public class WriteBuffer {
 		queueIter = indexQueue.descendingIterator();
 
 		return queueIter.next().getValue();// The value at the tail of the queue is the most up to date one
-		
 		
 	}
 	
