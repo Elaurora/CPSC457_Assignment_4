@@ -78,12 +78,18 @@ public class Processor extends Thread {
 		this.writeBuffer.store("process" + this.id + "level", level);
 		this.writeBuffer.store("level" + level + "turn", this.id);
 		
-		while(processAboveUs(level) && weAreLastProcessIntoOurLevel(level)) {
-			//try {
-				//sleep(1);
-			//} catch (InterruptedException e) {
+//		try {
+//			sleep(100);
+//		} catch (InterruptedException e) {
+//			//nothing to handle
+//		}
+		
+		while(processAboveUs(level) && weAreLastProcessIntoOurLevel(level)) {	
+			try {
+				sleep(1);
+			} catch (InterruptedException e) {
 				//nothing to handle
-			//}
+			}
 		}
 	}
 
@@ -148,7 +154,7 @@ public class Processor extends Thread {
 		this.writeBuffer.store("b", originalB);
 		
 		try {
-			sleep(200);
+			sleep(10);
 		} catch (InterruptedException e) {
 			//no harm no foul
 		}
@@ -170,6 +176,8 @@ public class Processor extends Thread {
 		
 		if(actualSum != correctSum) {
 			System.err.println("Error in critical section, apparently " + originalA + " + " + originalB +  " = " + actualSum);
+		} else {
+			//System.out.println("Success in critical section");
 		}
 	}
 	

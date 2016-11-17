@@ -3,7 +3,6 @@ package memoryPackage;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 
 /**
@@ -67,7 +66,7 @@ public class WriteBuffer {
 	 * Returns the value whos turn it is to be stored, and removes that value from the buffer
 	 * @return The next value that is set to to be sent to main main memory. Returns null if the buffer is empty
 	 */
-	public PendingStore nextValueToBeStored(){
+	public synchronized PendingStore nextValueToBeStored(){
 		
 		if(this.writeAlgorithm_isTSO == true){
 			return getAndRemoveNextToBeStoredTSO();
@@ -117,7 +116,7 @@ public class WriteBuffer {
 	 * @return The most up to date value of the given variable waiting to be stored to main memory
 	 * @throws NotInBufferException if the requested variable is not currently waiting to be stored
 	 */
-	public Integer load(String index) throws NotInBufferException{
+	public synchronized Integer load(String index) throws NotInBufferException{
 		
 		if(this.writeAlgorithm_isTSO == true){ // TSO method
 			return loadTSO(index);
@@ -172,7 +171,6 @@ public class WriteBuffer {
 		if(indexQueue == null){ 
 			throw new NotInBufferException();
 		}
-		System.out.println(indexQueue.size());
 		
 		queueIter = indexQueue.descendingIterator();
 
@@ -187,7 +185,7 @@ public class WriteBuffer {
 	 * @param index - Name of the variable
 	 * @param value - value of the variable
 	 */
-	public void store(String index, Integer value){
+	public synchronized void store(String index, Integer value){
 		if(this.writeAlgorithm_isTSO == true){
 			storeTSO(index, value);
 		} else{
@@ -236,7 +234,7 @@ public class WriteBuffer {
 	 * @param index - variable name to search for
 	 * @return true if the variable is waiting to be written, false otherwise
 	 */
-	public boolean isVariableInBuffer(String index){
+	public synchronized boolean isVariableInBuffer(String index){
 		if(this.writeAlgorithm_isTSO == true){
 			return isVariableInBufferTSO(index);
 		} else{
