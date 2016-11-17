@@ -30,11 +30,16 @@ public class Processor extends Thread {
 	 */
 	private MainMemory mainMemory;
 	
-	public Processor(int id, int processCount, WriteBuffer writeBuffer, MainMemory mainMemory) {
+	private MutableInteger a;
+	private MutableInteger b;
+	
+	public Processor(int id, int processCount, WriteBuffer writeBuffer, MainMemory mainMemory, MutableInteger a, MutableInteger b) {
 		this.id = id;
 		this.processCount = processCount;
 		this.writeBuffer = writeBuffer;
 		this.mainMemory = mainMemory;
+		this.a = a;
+		this.b = b;
 		
 		this.mainMemory.store("process" + this.id + "level", -1);
 	}
@@ -150,26 +155,17 @@ public class Processor extends Thread {
 		int originalB = (int) (Math.random() * 100);
 		
 		
-		this.writeBuffer.store("a", originalA);
-		this.writeBuffer.store("b", originalB);
+		this.a.value = originalA;
+		this.b.value = originalB;
 		
 		try {
-			sleep(10);
+			sleep(1);
 		} catch (InterruptedException e) {
 			//no harm no foul
 		}
 		
-		int loadedA = -1;
-		int loadedB = -1;
-		
-		try {
-			loadedA = this.writeBuffer.load("a");
-			loadedB = this.writeBuffer.load("b");
-		} catch (NotInBufferException e) {
-			loadedA = this.mainMemory.load("a");
-			loadedB = this.mainMemory.load("b");
-		}
-		
+		int loadedA = this.a.value;
+		int loadedB = this.b.value;
 		
 		int correctSum = originalA + originalB;
 		int actualSum = loadedA + loadedB;

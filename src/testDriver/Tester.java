@@ -4,6 +4,7 @@ import java.util.Scanner;
 
 import memoryPackage.MainMemory;
 import memoryPackage.MemoryAgent;
+import memoryPackage.MutableInteger;
 import memoryPackage.Processor;
 import memoryPackage.WriteBuffer;
 
@@ -33,6 +34,10 @@ public class Tester {
 		//create a main memory
 		MainMemory mainMemory = new MainMemory();
 		
+		//create mutable integers
+		MutableInteger a = new MutableInteger();
+		MutableInteger b = new MutableInteger();
+		
 		//create n processors
 		Processor[] processors = new Processor[n];
 		
@@ -41,7 +46,7 @@ public class Tester {
 		
 		for(int i = 0; i < n; i++) {
 			WriteBuffer wb = new WriteBuffer(TSO);
-			processors[i] = new Processor(i, n, wb, mainMemory);
+			processors[i] = new Processor(i, n, wb, mainMemory,a, b);
 			memoryAgents[i] = new MemoryAgent(wb, mainMemory);
 		}
 		
