@@ -127,6 +127,7 @@ public class WriteBuffer {
 			this.mainMemory.store(toBeStored.getIndex(), toBeStored.getValue());
 		}
 		buffer.remove(vName);
+		removeVariableFromPSOQueue(vName);
 	}
 	
 	
@@ -138,8 +139,9 @@ public class WriteBuffer {
 		this.pendingStore = true;
 		if(this.writeAlgorithm_isTSO == true){
 			return getAndRemoveNextToBeStoredTSO();
+		} else {
+			return getAndRemoveNextToBeStoredPSO();
 		}
-		return getAndRemoveNextToBeStoredPSO();
 	}
 	
 	/**
@@ -217,22 +219,21 @@ public class WriteBuffer {
 	 * @throws NotInBufferException - if the requested variable is not currently waiting to be stored
 	 */
 	private Integer loadTSO(String index) throws NotInBufferException{
-		synchronized(buffer){
-			ConcurrentLinkedDeque<PendingStore> indexQueue;
-			
-			Iterator<PendingStore> queueIter;
-			
-			indexQueue = buffer.get(default_TSO_Index);
-			
-			queueIter = indexQueue.descendingIterator();
-			
-			while(queueIter.hasNext()){
-				PendingStore queueVal = queueIter.next();
-				if(queueVal.getIndex().equals(index)){
-					return queueVal.getValue();
-				}
+		ConcurrentLinkedDeque<PendingStore> indexQueue;
+		
+		Iterator<PendingStore> queueIter;
+		
+		indexQueue = buffer.get(default_TSO_Index);
+		
+		queueIter = indexQueue.descendingIterator();
+		
+		while(queueIter.hasNext()){
+			PendingStore queueVal = queueIter.next();
+			if(queueVal.getIndex().equals(index)){
+				return queueVal.getValue();
 			}
 		}
+		
 		throw new NotInBufferException();
 		
 		
@@ -358,6 +359,21 @@ public class WriteBuffer {
 		} else{
 			return true;
 		}
+	}
+	
+	
+	private void removeVariableFromPSOQueue(String removed){
+		ConcurrentLinkedDeque<String> newQueue = new ConcurrentLinkedDeque<String>();
+		
+		while(!this.storeQueue_PSO.isEmpty()){
+			String stringInQuestion = this.storeQueue_PSO.poll();
+			if(!stringInQuestion.equals(removed)){
+				newQueue.add(stringInQuestion);
+			}
+		}
+		
+		this.storeQueue_PSO = newQueue;
+		
 	}
 	
 	
