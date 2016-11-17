@@ -103,6 +103,7 @@ public class WriteBuffer {
 		if(!nextToBeStoredQueue.isEmpty()){// If that was not the last value to be stored for this variable, return it to the queue
 			this.storeQueue_PSO.add(nextToBeStoredIndex);
 		} else{// If that was the last value to be stored for that variable, remove its queue from the buffer map
+			//removed the put null here
 			buffer.remove(nextToBeStoredIndex);
 		}
 		
