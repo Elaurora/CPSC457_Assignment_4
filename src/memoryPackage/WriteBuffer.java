@@ -3,7 +3,6 @@ package memoryPackage;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 
 /**
@@ -104,6 +103,7 @@ public class WriteBuffer {
 		if(!nextToBeStoredQueue.isEmpty()){// If that was not the last value to be stored for this variable, return it to the queue
 			this.storeQueue_PSO.add(nextToBeStoredIndex);
 		} else{// If that was the last value to be stored for that variable, remove its queue from the buffer map
+			buffer.put(nextToBeStoredIndex, null);
 			buffer.remove(nextToBeStoredIndex);
 		}
 		
@@ -134,23 +134,24 @@ public class WriteBuffer {
 	 * @throws NotInBufferException - if the requested variable is not currently waiting to be stored
 	 */
 	private Integer loadTSO(String index) throws NotInBufferException{
-		
-		ConcurrentLinkedDeque<PendingStore> indexQueue;
-		
-		Iterator<PendingStore> queueIter;
-		
-		indexQueue = buffer.get(default_TSO_Index);
-		
-		queueIter = indexQueue.descendingIterator();
-		
-		while(queueIter.hasNext()){
-			PendingStore queueVal = queueIter.next();
-			if(queueVal.getIndex().equals(index)){
-				return queueVal.getValue();
+		synchronized(buffer){
+			ConcurrentLinkedDeque<PendingStore> indexQueue;
+			
+			Iterator<PendingStore> queueIter;
+			
+			indexQueue = buffer.get(default_TSO_Index);
+			
+			queueIter = indexQueue.descendingIterator();
+			
+			while(queueIter.hasNext()){
+				PendingStore queueVal = queueIter.next();
+				if(queueVal.getIndex().equals(index)){
+					return queueVal.getValue();
+				}
 			}
 		}
-		
 		throw new NotInBufferException();
+		
 		
 	}
 	
@@ -162,23 +163,21 @@ public class WriteBuffer {
 	 * @throws NotInBufferException - if the requested variable is not currently waiting to be stored
 	 */
 	private Integer loadPSO(String index) throws NotInBufferException{
-		
-		ConcurrentLinkedDeque<PendingStore> indexQueue;
-		
-		Iterator<PendingStore> queueIter;
-		
-		indexQueue = buffer.get(index);
-		
-		if(indexQueue == null){ 
-			throw new NotInBufferException();
-		}
-		System.out.println(indexQueue.size());
-		
-		queueIter = indexQueue.descendingIterator();
+		synchronized(buffer) {
+			ConcurrentLinkedDeque<PendingStore> indexQueue;
+			
+			Iterator<PendingStore> queueIter;
+			
+			indexQueue = buffer.get(index);
+			
+			if(indexQueue == null){ 
+				throw new NotInBufferException();
+			}
+			
+			queueIter = indexQueue.descendingIterator();
 
-		return queueIter.next().getValue();// The value at the tail of the queue is the most up to date one
-		
-		
+			return queueIter.next().getValue();// The value at the tail of the queue is the most up to date one
+		}
 	}
 	
 	
