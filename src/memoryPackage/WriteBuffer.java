@@ -134,7 +134,6 @@ public class WriteBuffer {
 	 * @throws NotInBufferException - if the requested variable is not currently waiting to be stored
 	 */
 	private Integer loadTSO(String index) throws NotInBufferException{
-		synchronized(buffer){
 			ConcurrentLinkedDeque<PendingStore> indexQueue;
 			
 			Iterator<PendingStore> queueIter;
@@ -149,7 +148,7 @@ public class WriteBuffer {
 					return queueVal.getValue();
 				}
 			}
-		}
+		
 		throw new NotInBufferException();
 		
 		
