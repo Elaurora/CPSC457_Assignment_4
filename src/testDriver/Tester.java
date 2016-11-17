@@ -99,5 +99,9 @@ public class Tester {
 			//on interrupt just quit
 		}
 		
+		//print results
+		System.out.println("Successful Critical Section Access:" + Processor.successTotal);
+		System.out.println("Failed Critical Section Access:" + Processor.errorTotal);
+		
 	}
 }

@@ -25,6 +25,10 @@ public class Processor extends Thread {
 	 */
 	private int processCount = -1;
 	
+	public static int errorTotal = 0;
+	
+	public static int successTotal = 0;
+	
 	/**
 	 * The backup memory unit to load from
 	 */
@@ -60,7 +64,7 @@ public class Processor extends Thread {
 	 * Exit section of concurrency algorithm, move the current process out of all queues
 	 */
 	private void exitSection() {
-		this.writeBuffer.store("process" + this.id + "level", -1);
+		this.mainMemory.store("process" + this.id + "level", -1);
 		
 	}
 
@@ -80,8 +84,8 @@ public class Processor extends Thread {
 	 * 		The level to enter at
 	 */
 	private void waitAtLevel(int level) {
-		this.writeBuffer.store("process" + this.id + "level", level);
-		this.writeBuffer.store("level" + level + "turn", this.id);
+		this.mainMemory.store("process" + this.id + "level", level);
+		this.mainMemory.store("level" + level + "turn", this.id);
 		
 //		try {
 //			sleep(100);
@@ -172,7 +176,9 @@ public class Processor extends Thread {
 		
 		if(actualSum != correctSum) {
 			System.err.println("Error in critical section, apparently " + originalA + " + " + originalB +  " = " + actualSum);
+			errorTotal++;
 		} else {
+			successTotal++;
 			//System.out.println("Success in critical section");
 		}
 	}
