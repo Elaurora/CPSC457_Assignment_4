@@ -45,6 +45,8 @@ public class Tester {
 			memoryAgents[i] = new MemoryAgent(wb, mainMemory);
 		}
 		
+		System.out.println("Simulation Running, type \"quit\" to exit");
+		
 		for(int i = 0; i < n; i++) {
 			processors[i].start();
 			memoryAgents[i].start();
@@ -52,7 +54,7 @@ public class Tester {
 		
 		//poll user for quit command
 		Scanner scan = new Scanner(System.in);
-		System.out.println("Simulation Running, type \"quit\" to exit");
+		
 		while(true) {
 			if(scan.next().equals("quit")) {
 				break; 
@@ -62,17 +64,30 @@ public class Tester {
 		System.out.println("Simulation Ending, please wait...");
 		
 		scan.close();
-		
+	
 		//tell the threads to quit
 		for(int i = 0; i < processors.length; i++) {
 			processors[i].done();
-			memoryAgents[i].done();
 		}
 		
 		//wait for threads to finish
 		try {
 			for(int i = 0; i < processors.length; i++) {
 				processors[i].join();
+			}
+		} catch (InterruptedException e) {
+			//on interrupt just quit
+		}
+		
+		
+		//tell the threads to quit
+		for(int i = 0; i < processors.length; i++) {
+			memoryAgents[i].done();
+		}
+		
+		//wait for threads to finish
+		try {
+			for(int i = 0; i < processors.length; i++) {
 				memoryAgents[i].join();
 			}
 		} catch (InterruptedException e) {
