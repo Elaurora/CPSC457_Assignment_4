@@ -64,8 +64,8 @@ public class Processor extends Thread {
 	 * Exit section of concurrency algorithm, move the current process out of all queues
 	 */
 	private void exitSection() {
-		this.writeBuffer.store("process" + this.id + "level", -1);
-		//this.writeBuffer.SwapAtomic("process" + this.id + "level", -1);
+		//this.writeBuffer.store("process" + this.id + "level", -1);
+		this.writeBuffer.SwapAtomic("process" + this.id + "level", -1);
 		
 	}
 
@@ -86,11 +86,11 @@ public class Processor extends Thread {
 	 */
 	private void waitAtLevel(int level) {
 		
-		this.writeBuffer.store("process" + this.id + "level", level);
-		//this.writeBuffer.SwapAtomic("process" + this.id + "level", level);
+		//this.writeBuffer.store("process" + this.id + "level", level);
+		this.writeBuffer.SwapAtomic("process" + this.id + "level", level);
 		
-		this.writeBuffer.store("level" + level + "turn", this.id);
-		//this.writeBuffer.SwapAtomic("level" + level + "turn", this.id);
+		//this.writeBuffer.store("level" + level + "turn", this.id);
+		this.writeBuffer.SwapAtomic("level" + level + "turn", this.id);
 		
 //		try {
 //			sleep(100);
