@@ -95,11 +95,13 @@ public class WriteBuffer {
 	 * @param vName - Name of the variable to be flushed
 	 */
 	private void flushVariable(String vName){
+		this.pendingStore = true;
 		if(this.writeAlgorithm_isTSO == true){ // TSO method
 			flushTSO();
 		} else{
 			flushVariablePSO(vName);
 		}
+		this.storeComplete();
 	}
 	
 	
