@@ -364,6 +364,10 @@ public class WriteBuffer {
 	}
 	
 	
+	/**
+	 * Removes the given variable from the PSOQueue
+	 * @param removed - variable to be removed
+	 */
 	private void removeVariableFromPSOQueue(String removed){
 		ConcurrentLinkedDeque<String> newQueue = new ConcurrentLinkedDeque<String>();
 		
