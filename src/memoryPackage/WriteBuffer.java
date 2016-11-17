@@ -37,6 +37,8 @@ public class WriteBuffer {
 	 * Queue that keeps track of which variables turn it is to get written to the main memory
 	 */
 	private ConcurrentLinkedDeque<String> storeQueue_PSO;
+
+	private boolean pendingStore;
 	
 	
 	/**
@@ -70,11 +72,19 @@ public class WriteBuffer {
 	 * @return The next value that is set to to be sent to main main memory. Returns null if the buffer is empty
 	 */
 	public synchronized PendingStore nextValueToBeStored(){
-		
+		this.pendingStore = true;
 		if(this.writeAlgorithm_isTSO == true){
 			return getAndRemoveNextToBeStoredTSO();
 		}
 		return getAndRemoveNextToBeStoredPSO();
+	}
+	
+	/**
+	 * Notification from the memory agent that it has completed storing a variable to main memory
+	 */
+	public synchronized void storeComplete() {
+		this.pendingStore = false;
+		notifyAll();
 	}
 	
 	
@@ -121,6 +131,13 @@ public class WriteBuffer {
 	 * @throws NotInBufferException if the requested variable is not currently waiting to be stored
 	 */
 	public synchronized Integer load(String index) throws NotInBufferException{
+		//while a store is pending, wait
+		while(this.pendingStore) {
+			try {
+				wait();
+			} catch (InterruptedException e) {}
+		}
+		
 		
 		if(this.writeAlgorithm_isTSO == true){ // TSO method
 			return loadTSO(index);

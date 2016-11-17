@@ -46,6 +46,8 @@ public class MemoryAgent extends Thread {
 				this.mainMemory.store(store.getIndex(), store.getValue());
 			}
 			
+			this.pendingStoreBuffer.storeComplete();
+			
 			try {
 				sleep(1);
 			} catch (InterruptedException e) {
