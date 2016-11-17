@@ -66,6 +66,69 @@ public class WriteBuffer {
 	
 	
 	/**
+	 * Swaps the value of the given variable in main memory with the new given value and returns its old value
+	 * @param vName - Name of the variable you are swapping the value of
+	 * @param newValue - The new value for the variable
+	 * @return Old value of the Variable
+	 */
+	public synchronized Integer SwapAtomic(String vName, Integer newValue){
+		Integer oldValue = null;
+		
+		try{
+			oldValue = this.load(vName);
+		} catch(NotInBufferException e){
+			oldValue = this.mainMemory.load(vName);
+		}
+		
+		this.store(vName, newValue);
+		this.flushVariable(vName);
+		
+		return oldValue;
+	}
+	
+	
+	/**
+	 * If TSO - flushed the entire buffer to be sotred immediatly into main memory
+	 * if PSO - Flushes all values of the given variable name to the main memory
+	 * @param vName - Name of the variable to be flushed
+	 */
+	private void flushVariable(String vName){
+		if(this.writeAlgorithm_isTSO == true){ // TSO method
+			flushTSO();
+		} else{
+			flushVariablePSO(vName);
+		}
+	}
+	
+	
+	/**
+	 * Writes everything in the buffer to main memory immediatly
+	 */
+	private void flushTSO(){
+		PendingStore store = this.nextValueToBeStored();
+		while(store != null){
+			this.mainMemory.store(store.getIndex(), store.getValue());
+			store = this.nextValueToBeStored();
+		}
+	}
+	
+	
+	/**
+	 * Flushed every value in the buffer of the given variable waiting be stored to main memory
+	 * @param vName - Name of the variable to be flushed
+	 */
+	private void flushVariablePSO(String vName){
+		
+		ConcurrentLinkedDeque<PendingStore> toBeFlushed = buffer.get(vName);
+		while(!toBeFlushed.isEmpty()){
+			PendingStore toBeStored = toBeFlushed.poll();
+			this.mainMemory.store(toBeStored.getIndex(), toBeStored.getValue());
+		}
+		buffer.remove(vName);
+	}
+	
+	
+	/**
 	 * Returns the value whos turn it is to be stored, and removes that value from the buffer
 	 * @return The next value that is set to to be sent to main main memory. Returns null if the buffer is empty
 	 */
