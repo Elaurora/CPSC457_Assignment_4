@@ -49,6 +49,16 @@ public class Processor extends Thread {
 	 * A mutable integer for critical section demos
 	 */
 	private MutableInteger b;
+
+	/**
+	 * The original value of a, what it should be
+	 */
+	private int originalA;
+
+	/**
+	 * The original value of b, what it should be
+	 */
+	private int originalB;
 	
 	/**
 	 * Initialzies a processor to run
@@ -81,6 +91,11 @@ public class Processor extends Thread {
 	 */
 	public void run() {
 		while(!done) {
+			originalA = (int) (Math.random() * 100);
+			originalB = (int) (Math.random() * 100);
+			
+			
+			
 			this.entrySection();
 			this.criticalSection();
 			this.exitSection();
@@ -93,7 +108,7 @@ public class Processor extends Thread {
 	 */
 	private void exitSection() {
 		//this.writeBuffer.store("process" + this.id + "level", -1);
-		this.writeBuffer.SwapAtomic("process" + this.id + "level", -1);
+		this.writeBuffer.store("process" + this.id + "level", -1);
 		
 	}
 
@@ -115,10 +130,10 @@ public class Processor extends Thread {
 	private void waitAtLevel(int level) {
 		
 		//this.writeBuffer.store("process" + this.id + "level", level);
-		this.writeBuffer.SwapAtomic("process" + this.id + "level", level);
+		this.writeBuffer.store("process" + this.id + "level", level);
 		
 		//this.writeBuffer.store("level" + level + "turn", this.id);
-		this.writeBuffer.SwapAtomic("level" + level + "turn", this.id);
+		this.writeBuffer.store("level" + level + "turn", this.id);
 		
 //		try {
 //			sleep(100);
@@ -188,10 +203,6 @@ public class Processor extends Thread {
 	 * Simulation critical section, might fail if multiple programs execute this concurrently
 	 */
 	public void criticalSection() {
-		int originalA = (int) (Math.random() * 100);
-		int originalB = (int) (Math.random() * 100);
-		
-		
 		this.a.value = originalA;
 		this.b.value = originalB;
 		
