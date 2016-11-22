@@ -24,6 +24,9 @@ public class WriteBuffer {
 	 */
 	private ConcurrentLinkedDeque<PendingStore> storeQueue;
 
+	/**
+	 * Flag to check if the pending store is complete
+	 */
 	private boolean pendingStore;
 	
 	
